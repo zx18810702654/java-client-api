@@ -1097,5 +1097,5 @@ TestReport testReport = mavenJob.getLastSuccessfulBuild().getTestReport();
 [jissue-38787]: https://issues.jenkins-ci.org/browse/JENKINS-38787
 [jissue-38816]: https://issues.jenkins-ci.org/browse/JENKINS-38816
 [jissue-38823]: https://issues.jenkins-ci.org/browse/JENKINS-38823
-[jissue-46445]: https://issues.jenkins-ci.org/browse/JENKINS-46445)
-[jissue-46472]: https://issues.jenkins-ci.org/browse/JENKINS-46472)
+[jissue-46445]: https://issues.jenkins-ci.org/browse/JENKINS-46445
+[jissue-46472]: https://issues.jenkins-ci.org/browse/JENKINS-46472
