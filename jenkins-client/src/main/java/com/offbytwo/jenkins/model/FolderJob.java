@@ -1,11 +1,15 @@
 package com.offbytwo.jenkins.model;
 
+import com.offbytwo.jenkins.helper.FunctionalHelper;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.offbytwo.jenkins.helper.FunctionalHelper.SET_CLIENT;
 
 public class FolderJob extends Job {
 
@@ -48,10 +52,8 @@ public class FolderJob extends Job {
      */
     public Map<String, Job> getJobs() {
         return jobs.stream()
-                .map(item -> {
-                    item.setClient(this.client);
-                    return item;
-                }).collect(Collectors.toMap(k -> k.getName(), Function.identity()));
+                .map(SET_CLIENT(this.client))
+                .collect(Collectors.toMap(k -> k.getName(), Function.identity()));
     }
 
     /**
@@ -62,10 +64,7 @@ public class FolderJob extends Job {
      */
     public Job getJob(String name) {
         return jobs.stream()
-            .map(item -> {
-                item.setClient(this.client);
-                return item;
-            })
+            .map(SET_CLIENT(this.client))
             .filter(item -> item.getName().equals(name))
             .findAny()
             .orElseThrow(() -> new IllegalArgumentException("Job with name " + name + " does not exist."));

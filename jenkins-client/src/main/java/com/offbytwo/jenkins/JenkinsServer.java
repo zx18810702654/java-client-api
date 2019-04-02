@@ -14,6 +14,8 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
+import com.offbytwo.jenkins.helper.FunctionalHelper;
+import com.offbytwo.jenkins.model.BaseModel;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.entity.ContentType;
@@ -46,6 +48,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.offbytwo.jenkins.helper.FunctionalHelper.SET_CLIENT;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -171,10 +174,7 @@ public class JenkinsServer implements Closeable {
         List<Job> jobs = client.get(path, viewClass).getJobs();
 
         return jobs.stream()
-                .map(s -> {
-                    s.setClient(this.client);
-                    return s;
-                })
+                .map(SET_CLIENT(this.client))
                 .collect(toMap(s -> s.getName(), s -> s));
     }
 
@@ -204,8 +204,8 @@ public class JenkinsServer implements Closeable {
             view.setClient(this.client);
 
             //TODO: Check if this correctly works!!
-            view.getJobs().stream().map(s -> { s.setClient(this.client); return s;});
-            view.getViews().stream().map(s -> { s.setClient(this.client); return s;});
+            view.getJobs().stream().map(SET_CLIENT(this.client));
+            view.getViews().stream().map(SET_CLIENT(this.client));
 
             return view;
         }).collect(Collectors.toMap(s -> s.getName(), v -> v));
@@ -534,10 +534,7 @@ public class JenkinsServer implements Closeable {
     public Map<String, Computer> getComputers() throws IOException {
         List<Computer> computers = client.get("computer/", Computer.class).getComputers();
         return computers.stream()
-                .map(s -> {
-                    s.setClient(this.client);
-                    return s;
-                })
+                .map(SET_CLIENT(this.client))
                 .collect(Collectors.toMap(s -> s.getDisplayName().toLowerCase(), Function.identity()));
     }
 

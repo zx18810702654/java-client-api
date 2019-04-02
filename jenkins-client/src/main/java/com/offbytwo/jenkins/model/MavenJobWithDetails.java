@@ -1,20 +1,19 @@
 package com.offbytwo.jenkins.model;
 
-import static java.util.stream.Collectors.toList;
+import com.offbytwo.jenkins.client.util.EncodingUtils;
+import com.offbytwo.jenkins.helper.FunctionalHelper;
+import com.offbytwo.jenkins.helper.Range;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpResponseException;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
-
-import com.offbytwo.jenkins.client.util.EncodingUtils;
-import com.offbytwo.jenkins.helper.Range;
+import static com.offbytwo.jenkins.helper.FunctionalHelper.SET_CLIENT;
+import static java.util.stream.Collectors.toList;
 
 public class MavenJobWithDetails extends MavenJob {
 
@@ -59,7 +58,9 @@ public class MavenJobWithDetails extends MavenJob {
         if (builds == null) {
             return Collections.emptyList();
         } else {
-            return builds.stream().map(s -> buildWithClient(s)).collect(toList());
+            return builds.stream()
+                    .map(SET_CLIENT(this.client))
+                    .collect(toList());
         }
     }
 
@@ -89,7 +90,9 @@ public class MavenJobWithDetails extends MavenJob {
             if (builds == null) {
                 return Collections.emptyList();
             } else {
-                return builds.stream().map(s -> buildWithClient(s)).collect(toList());
+                return builds.stream()
+                        .map(SET_CLIENT(this.client))
+                        .collect(toList());
             }
         } catch (HttpResponseException e) {
             // TODO: Thinks about a better handling if the job does not exist?
@@ -135,7 +138,9 @@ public class MavenJobWithDetails extends MavenJob {
            if (builds == null) {
                return Collections.emptyList();
            } else {
-               return builds.stream().map(s -> buildWithClient(s)).collect(toList());
+               return builds.stream()
+                       .map(SET_CLIENT(this.client))
+                       .collect(toList());
            }
        } catch (HttpResponseException e) {
            // TODO: Thinks about a better handline if the job does not exist?
@@ -251,22 +256,13 @@ public class MavenJobWithDetails extends MavenJob {
         return nextBuildNumber;
     }
 
-    private Function<Job, Job> setTheClient = (s) -> {
-        s.setClient(this.client);
-        return s;
-    };
-
     public List<Job> getDownstreamProjects() {
         if (downstreamProjects == null) {
             return Collections.emptyList();
         } else {
-            return downstreamProjects.stream().map(
-                    s -> {
-                        s.setClient(this.client);
-                        return s;
-                    }
-            )
-            .collect(toList());
+            return downstreamProjects.stream()
+                    .map(SET_CLIENT(this.client))
+                    .collect(toList());
         }
     }
 
@@ -274,13 +270,9 @@ public class MavenJobWithDetails extends MavenJob {
         if (upstreamProjects == null) {
             return Collections.emptyList();
         } else {
-            return upstreamProjects.stream().map(
-                    s -> {
-                        s.setClient(this.client);
-                        return s;
-                    }
-            )
-            .collect(toList());
+            return upstreamProjects.stream()
+                    .map(SET_CLIENT(this.client))
+                    .collect(toList());
         }
     }
 
@@ -304,11 +296,4 @@ public class MavenJobWithDetails extends MavenJob {
         return ret;
     }
 
-    private class MavenJobWithClient implements Function<Job, Job> {
-        @Override
-        public Job apply(Job job) {
-            job.setClient(client);
-            return job;
-        }
-    }
 }

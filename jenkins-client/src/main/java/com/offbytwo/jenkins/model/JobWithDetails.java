@@ -6,25 +6,21 @@
 
 package com.offbytwo.jenkins.model;
 
+import com.offbytwo.jenkins.client.util.EncodingUtils;
+import com.offbytwo.jenkins.helper.Range;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpResponseException;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
-
-import com.offbytwo.jenkins.client.util.EncodingUtils;
-import com.offbytwo.jenkins.helper.Range;
-
+import static com.offbytwo.jenkins.helper.FunctionalHelper.SET_CLIENT;
 import static java.util.stream.Collectors.toList;
 
 public class JobWithDetails extends Job {
@@ -423,7 +419,7 @@ public class JobWithDetails extends Job {
             return Collections.emptyList();
         } else {
             return downstreamProjects.stream()
-                    .map(s -> { s.setClient(this.client); return s; })
+                    .map(SET_CLIENT(this.client))
                     .collect(toList());
         }
     }
@@ -437,7 +433,7 @@ public class JobWithDetails extends Job {
             return Collections.emptyList();
         } else {
             return upstreamProjects.stream()
-                    .map(s -> { s.setClient(this.client); return s;})
+                    .map(SET_CLIENT(this.client))
                     .collect(toList());
         }
     }

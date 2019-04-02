@@ -246,11 +246,4 @@ public class ComputerWithDetails extends Computer {
         return result;
     }
 
-    private class ComputerWithClient implements Function<Computer, Computer> {
-        @Override
-        public Computer apply(Computer computer) {
-            computer.setClient(client);
-            return computer;
-        }
-    }
 }
