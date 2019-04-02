@@ -1,13 +1,11 @@
 package com.offbytwo.jenkins.model;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.offbytwo.jenkins.client.util.EncodingUtils;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class FolderJob extends Job {
 
@@ -49,13 +47,11 @@ public class FolderJob extends Job {
      * @return list of defined jobs (summary level, for details @see Job#details
      */
     public Map<String, Job> getJobs() {
-        return Maps.uniqueIndex(jobs, new Function<Job, String>() {
-            @Override
-            public String apply(Job job) {
-                job.setClient(client);
-                return job.getName();
-            }
-        });
+        return jobs.stream()
+                .map(item -> {
+                    item.setClient(this.client);
+                    return item;
+                }).collect(Collectors.toMap(k -> k.getName(), Function.identity()));
     }
 
     /**
@@ -65,13 +61,14 @@ public class FolderJob extends Job {
      * @return the given job
      */
     public Job getJob(String name) {
-        return Maps.uniqueIndex(jobs, new Function<Job, String>() {
-            @Override
-            public String apply(Job job) {
-                job.setClient(client);
-                return job.getName();
-            }
-        }).get(name);
+        return jobs.stream()
+            .map(item -> {
+                item.setClient(this.client);
+                return item;
+            })
+            .filter(item -> item.getName().equals(name))
+            .findAny()
+            .orElseThrow(() -> new IllegalArgumentException("Job with name " + name + " does not exist."));
     }
 
     /**
@@ -94,8 +91,12 @@ public class FolderJob extends Job {
     public void createFolder(String folderName, Boolean crumbFlag) throws IOException {
         // https://gist.github.com/stuart-warren/7786892 was slightly helpful
         // here
-        ImmutableMap<String, String> params = ImmutableMap.of("mode", "com.cloudbees.hudson.plugins.folder.Folder",
-                "name", EncodingUtils.formParameter(folderName), "from", "", "Submit", "OK");
+        //TODO: JDK9+: Map.of(...)
+        Map<String, String> params = new HashMap<>();
+        params.put("mode", "com.cloudbees.hudson.plugins.folder.Folder");
+        params.put("name", folderName);
+        params.put("from", "");
+        params.put("Submit", "OK");
         client.post_form(this.getUrl() + "/createItem?", params, crumbFlag);
     }
 

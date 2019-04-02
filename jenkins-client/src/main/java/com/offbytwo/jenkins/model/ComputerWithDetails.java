@@ -10,9 +10,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.common.base.Function;
 import com.offbytwo.jenkins.client.util.EncodingUtils;
+import java.util.function.Function;
 
 public class ComputerWithDetails extends Computer {
 
@@ -88,8 +87,6 @@ public class ComputerWithDetails extends Computer {
             name = EncodingUtils.encode(displayName);
         }
         
-        Map<String, String> data = new HashMap<String, String>();
-        data.put( "json", "init" );
         client.post( "/computer/" + name + "/toggleOffline", crumbFlag);
     }
 

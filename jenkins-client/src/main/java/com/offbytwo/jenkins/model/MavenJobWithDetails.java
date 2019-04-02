@@ -1,19 +1,18 @@
 package com.offbytwo.jenkins.model;
 
-import static com.google.common.collect.Lists.transform;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.offbytwo.jenkins.client.util.EncodingUtils;
 import com.offbytwo.jenkins.helper.Range;
 
@@ -60,12 +59,7 @@ public class MavenJobWithDetails extends MavenJob {
         if (builds == null) {
             return Collections.emptyList();
         } else {
-            return Lists.transform(builds, new Function<MavenBuild, MavenBuild>() {
-                @Override
-                public MavenBuild apply(MavenBuild from) {
-                    return buildWithClient(from);
-                }
-            });
+            return builds.stream().map(s -> buildWithClient(s)).collect(toList());
         }
     }
 
@@ -95,12 +89,7 @@ public class MavenJobWithDetails extends MavenJob {
             if (builds == null) {
                 return Collections.emptyList();
             } else {
-                return transform(builds, new Function<MavenBuild, MavenBuild>() {
-                    @Override
-                    public MavenBuild apply(MavenBuild from) {
-                        return buildWithClient(from);
-                    }
-                });
+                return builds.stream().map(s -> buildWithClient(s)).collect(toList());
             }
         } catch (HttpResponseException e) {
             // TODO: Thinks about a better handling if the job does not exist?
@@ -146,12 +135,7 @@ public class MavenJobWithDetails extends MavenJob {
            if (builds == null) {
                return Collections.emptyList();
            } else {
-               return transform(builds, new Function<MavenBuild, MavenBuild>() {
-                   @Override
-                   public MavenBuild apply(MavenBuild from) {
-                       return buildWithClient(from);
-                   }
-               });
+               return builds.stream().map(s -> buildWithClient(s)).collect(toList());
            }
        } catch (HttpResponseException e) {
            // TODO: Thinks about a better handline if the job does not exist?
@@ -267,11 +251,22 @@ public class MavenJobWithDetails extends MavenJob {
         return nextBuildNumber;
     }
 
+    private Function<Job, Job> setTheClient = (s) -> {
+        s.setClient(this.client);
+        return s;
+    };
+
     public List<Job> getDownstreamProjects() {
         if (downstreamProjects == null) {
             return Collections.emptyList();
         } else {
-            return Lists.transform(downstreamProjects, new MavenJobWithClient());
+            return downstreamProjects.stream().map(
+                    s -> {
+                        s.setClient(this.client);
+                        return s;
+                    }
+            )
+            .collect(toList());
         }
     }
 
@@ -279,23 +274,28 @@ public class MavenJobWithDetails extends MavenJob {
         if (upstreamProjects == null) {
             return Collections.emptyList();
         } else {
-            return Lists.transform(upstreamProjects, new MavenJobWithClient());
+            return upstreamProjects.stream().map(
+                    s -> {
+                        s.setClient(this.client);
+                        return s;
+                    }
+            )
+            .collect(toList());
         }
     }
 
-    public MavenBuild getBuildByNumber(final int buildNumber) {
+    private static Predicate<MavenBuild> isBuildNumberEqualTo(int buildNumber) {
+        return build -> build.getNumber() == buildNumber;
+    }
 
-        Predicate<MavenBuild> isMatchingBuildNumber = new Predicate<MavenBuild>() {
-
-            @Override
-            public boolean apply(MavenBuild input) {
-                return input.getNumber() == buildNumber;
-            }
-        };
-
-        Optional<MavenBuild> optionalBuild = Iterables.tryFind(builds, isMatchingBuildNumber);
-        // TODO: Check if we could use Build#NO...instead of Null?
-        return optionalBuild.orNull() == null ? null : buildWithClient(optionalBuild.orNull());
+    /**
+     * @param buildNumber The build you would like to select.
+     * @return Optional which contains the {@link MavenBuild}.
+     */
+    public Optional<MavenBuild> getBuildByNumber(final int buildNumber) {
+        return builds.stream()
+                .filter(isBuildNumberEqualTo(buildNumber))
+                .findFirst();
     }
     
     private MavenBuild buildWithClient(MavenBuild from) {
